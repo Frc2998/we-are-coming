@@ -3,10 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPA Initialization</title>
+    <title>Fullscreen Grid</title>
+    <!-- Gridstack CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack/4.2.8/gridstack.min.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #grid {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to our Single Page Application!</h1>
-    <p>This is the initial setup for GitHub Pages.</p>
+    <div class="grid-stack" id="grid">
+        <div class="grid-stack-item" gs-w="4" gs-h="2">
+            <div class="grid-stack-item-content">Item 1</div>
+        </div>
+        <div class="grid-stack-item" gs-w="4" gs-h="2">
+            <div class="grid-stack-item-content">Item 2</div>
+        </div>
+        <div class="grid-stack-item" gs-w="4" gs-h="2">
+            <div class="grid-stack-item-content">Item 3</div>
+        </div>
+        <div class="grid-stack-item" gs-w="4" gs-h="2">
+            <div class="grid-stack-item-content">Item 4</div>
+        </div>
+    </div>
+    <!-- Gridstack JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack/4.2.8/gridstack.all.js"></script>
+    <script>
+        var grid = $('.grid-stack').gridstack({
+            // options here
+        });
+    </script>
 </body>
 </html>
