@@ -13,15 +13,179 @@
             margin: 0;
         }
         #output {
-            margin: 0 auto;
-            max-width: 980px;
-            padding: 1em;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .dashboard {
+          height: 100vh;
+          display: grid;
+          grid-template-rows:
+            auto        /* top bar */
+            1fr         /* main focus */
+            auto;       /* info + bottom */
+
+          background: #0b1220;
+          color: white;
+          font-family: system-ui, sans-serif;
+        }
+
+        .top-bar {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: center;
+
+          padding: 12px 24px;
+          font-size: 1.25rem;
+          font-weight: 600;
+          opacity: 0.85;
+        }
+
+        .main {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr auto;
+
+          gap: 16px;
+          padding: 16px;
+        }
+
+        .alliance {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+
+          border-radius: 16px;
+          font-weight: 800;
+        }
+
+        .alliance-name {
+          font-size: clamp(48px, 6vw, 96px);
+        }
+
+        .station {
+          font-size: clamp(28px, 3vw, 48px);
+          margin-top: 8px;
+        }
+
+        .alliance.red {
+          background: linear-gradient(135deg, #dc2626, #7f1d1d);
+        }
+
+        .alliance.blue {
+          background: linear-gradient(135deg, #2563eb, #1e3a8a);
+        }
+
+        .match-number {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+
+          font-size: clamp(64px, 8vw, 140px);
+          font-weight: 800;
+        }
+
+        .on-deck {
+          padding: 8px;
+          border-radius: 4px;
+
+          background: linear-gradient(135deg, #f59e0b, #b45309);
+          color: #1f2937; /* darker text for contrast */
+        }
+
+        .countdown {
+          grid-column: 1 / -1;
+
+          text-align: center;
+          font-weight: 900;
+          letter-spacing: 2px;
+
+          font-size: clamp(72px, 10vw, 180px);
+        }
+
+        .countdown.warning {
+          background: linear-gradient(135deg, #f59e0b, #b45309);
+          color: #1f2937; /* darker text for contrast */
+        }
+
+        .countdown.danger {
+          background: linear-gradient(135deg, #ef4444, #7f1d1d);
+          color: white;
+
+          animation: countdown-pulse 1s infinite;
+        }
+
+        @keyframes countdown-pulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0px rgba(239, 68, 68, 0.7);
+          }
+          50% {
+            transform: scale(1.03);
+            box-shadow: 0 0 24px rgba(239, 68, 68, 0.9);
+          }
+        }
+
+        .teams {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+
+          gap: 16px;
+          padding: 12px 24px;
+        }
+
+        .allies, .enemies {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .label {
+          opacity: 0.7;
+          margin-right: 8px;
+        }
+
+        .team {
+          font-weight: 600;
+          font-size: clamp(16px, 2vw, 28px);
+        }
+
+        .bottom {
+          display: grid;
+          grid-template-columns: 1fr auto;
+
+          gap: 16px;
+          padding: 16px;
+          align-items: center;
+        }
+
+        .watch-button {
+          background: #1f2937;
+          padding: 16px 24px;
+          border-radius: 12px;
+
+          font-size: clamp(18px, 2vw, 28px);
+          font-weight: 700;
+
+          text-decoration: none;
+          color: white;
+
+          transition: transform 0.1s ease, background 0.1s ease;
+        }
+
+        .watch-button:hover {
+          background: #1d4ed8;
+          transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <p id="output">
-    </p>
+    <div id="output">
+    </div>
 
     <!-- Gridstack JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack/4.2.8/gridstack.all.js"></script>
@@ -66,10 +230,14 @@
           });
         }
 
-        async function output() {
-            const lines = [];
+        function teamNumberFromKey(s) {
+          return s.slice(3);
+        }
 
-            lines.push(`Team: ${team_number}`);
+        async function output() {
+            const result = {};
+
+            result.team_number = team_number;
 
             const events = await tba(`/team/${team_key}/events/${YEAR}`);
             const current_events = events.filter((e) => {
@@ -78,16 +246,17 @@
             });
 
             if (current_events.length == 0) {
-              lines.push(`No events in progress for team ${team_number}`);
-              return lines;
+              result.message = `No events in progress`;
+              return result;
             }
 
             if (current_events.length > 1) {
-              lines.push(`${current_events.length} events in progress for team ${team_number}`);
-              return lines;
+              result.message = `${current_events.length} events in progress`;
+              return result;
             }
 
             const current_event = current_events[0];
+            result.event = current_event;
 
             const matches = await tba(`/team/${team_key}/event/${current_event.key}/matches`);
 
@@ -97,53 +266,134 @@
             )[0];
 
             if (next_match == null) {
-              lines.push(`No more matches for team ${team_number}`);
-              return lines;
+              result.message = `No pending matches`;
+              return result;
             }
-            console.log(next_match);
-
-            lines.push(`Match number: ${next_match.match_number}`);
-            lines.push(`Estimated start in: ${formatClock(next_match.predicted_time - new Date() / 1000)}`);
+            result.next_match = next_match;
 
             const is_blue = next_match.alliances.blue.team_keys.includes(team_key);
-            lines.push(`Alliance: ${is_blue ? "Blue" : "Red"}`);
+            result.next_alliance_color = is_blue ? 'blue' : 'red'; 
 
             const alliance = is_blue ? next_match.alliances.blue : next_match.alliances.red;
-            lines.push(`Station: ${alliance.team_keys.indexOf(team_key) + 1}`);
+            result.next_alliance = alliance;
 
             const enemy = is_blue ? next_match.alliances.red : next_match.alliances.blue;
+            result.next_enemy_alliance = enemy;
 
             const teammates = alliance.team_keys.filter(k => k != team_key).map(k => k.slice(3));
-            lines.push(`Teammates: ${teammates}`);
-
-            lines.push(`Against: ${enemy.team_keys.map(k => k.slice(3))}`);
 
             const all_event_matches = await tba(`/event/${current_event.key}/matches`);
-            console.log(all_event_matches);
+
             const current_match = sortBy(
               all_event_matches.filter(m => m.actual_time == null),
               m => m.predicted_time
             )[0];
 
-            lines.push('');
+            result.current_match = current_match;
 
-            const matches_to_go = next_match.match_number - current_match.match_number;
-            lines.push(`Current match: ${current_match.match_number}`);
-            lines.push(`Matches until you: ${matches_to_go}`);
-            if (matches_to_go == 1) {
-              lines.push(`ON DECK`);
-            }
-
-            return lines;
+            return result;
         }
 
         async function setOutput() {
-            const lines = await output();
-            document.getElementById('output').innerHTML = lines.map(l => `<p>${l}</p>`).join('');
+            const data = await output();
+            console.log(data);
+
+            const youtubeVideo = data.event.webcasts.filter(w => new Date(w.date) <= new Date() && w.type == 'youtube')[0].channel;
+            const streamUrl = `https://youtube.com/watch?v=${youtubeVideo}`;
+
+            const matchesRemaining = data.next_match.match_number - data.current_match.match_number;
+            const onDeck = matchesRemaining <= 0 ? 'ON FIELD'
+              : matchesRemaining <= 1 ? 'ON DECK'
+              : null;
+
+            document.getElementById('output').innerHTML = `
+              <div class="dashboard">
+
+                <!-- Top Bar -->
+                <div class="top-bar">
+                  <div class="team">TEAM ${data.team_number}</div>
+                  <div class="branding">We Are Coming - By 2998</div>
+                </div>
+
+                <!-- Main Section -->
+                <div class="main">
+
+                  <!-- Alliance -->
+                  <div class="alliance ${data.next_alliance_color}">
+                    <div class="alliance-name">${data.next_alliance_color.toUpperCase()}</div>
+                    <div class="station">${data.next_alliance.team_keys.indexOf(team_key) + 1}</div>
+                  </div>
+
+                  <!-- Match Number -->
+                  <div class="match-number">
+                    <div>${data.current_match.match_number} → ${data.next_match.match_number}</div>
+
+                    ${onDeck != null ? `<div class="on-deck">${onDeck}</div>` : ''}
+                  </div>
+
+                  <!-- Countdown -->
+                  <div class="countdown" data-predicted-start-time="${data.next_match.predicted_time}">
+                    <!-- Populated by ticking function -->
+                  </div>
+
+                </div>
+
+                <!-- Teams -->
+                <div class="teams">
+                  <div class="allies">
+                    <span class="label">ALLIES:</span>
+                    ${data.next_alliance.team_keys.map(teamNumberFromKey).filter(t => t != data.team_number).map(t => `<span class="team">${t}</span>`).join("")}
+                  </div>
+
+                  <div class="enemies">
+                    <span class="label">ENEMIES:</span>
+                    ${data.next_enemy_alliance.team_keys.map(teamNumberFromKey).map(t => `<span class="team">${t}</span>`).join("")}
+                  </div>
+
+                  <a class="watch-button" href="${streamUrl}" target="_blank">
+                    WATCH LIVE
+                  </a>
+                </div>
+              </div>`;
+            updateCountdown();
+        }
+
+        function updateCountdown() {
+          const el = document.querySelector(".countdown");
+          if (!el) return;
+
+          const raw = el.dataset.predictedStartTime;
+          const targetTime = Number(raw);
+
+          if (!raw || Number.isNaN(targetTime)) {
+            el.textContent = "--:--";
+            el.classList.remove("warning", "danger");
+            return;
+          }
+
+          const now = Date.now() / 1000;
+          let remaining = Math.max(0, Math.floor(targetTime - now));
+
+          const minutes = Math.floor(remaining / 60);
+          const seconds = remaining % 60;
+
+          // Update text
+          el.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+          // Update state classes
+          el.classList.remove("warning", "danger");
+
+          if (remaining <= 60 * 10) {
+            el.classList.add("danger");
+          } else if (remaining <= 60 * 20) {
+            el.classList.add("warning");
+          }
         }
 
         setInterval(setOutput, 10000);
         setOutput();
+
+        setInterval(updateCountdown, 1000);
     </script>
 </body>
 </html>
