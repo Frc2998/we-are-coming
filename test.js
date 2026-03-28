@@ -1,8 +1,6 @@
 const API_KEY = 'ER2uZS5PgBVkCSFDOEwZlypoJCYmy1nCD8eAT92r3wphdhxdRZctbXgkrZ2toytI';
 const YEAR = new Date().getFullYear();
 
-import _ from "npm:lodash";
-
 const team_number = Deno.args[0];
 const team_key = `frc${team_number}`;
 console.log(`HUD for team ${team_number}`)
@@ -25,6 +23,19 @@ function formatClock(seconds) {
     .join(":");
 }
 
+function sortBy(arr, iteratee) {
+  return [...arr].sort((a, b) => {
+    const av = iteratee(a);
+    const bv = iteratee(b);
+
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+
+    return av < bv ? -1 : av > bv ? 1 : 0;
+  });
+}
+
 const events = await tba(`/team/${team_key}/events/${YEAR}`);
 const current_events = events.filter((e) => {
   const today = new Date();
@@ -45,7 +56,7 @@ const current_event = current_events[0];
 
 const matches = await tba(`/team/${team_key}/event/${current_event.key}/matches`);
 
-const next_match = _.sortBy(
+const next_match = sortBy(
   matches.filter(m => m.actual_time == null),
   m => m.predicted_time
 )[0];
@@ -71,14 +82,11 @@ console.log(`Teammates: ${teammates}`);
 
 console.log(`Against: ${enemy.team_keys.map(k => k.slice(3))}`);
 
-// console.log(next_match);
-
 const all_event_matches = await tba(`/event/${current_event.key}/matches`);
-const current_match = _.sortBy(
+const current_match = sortBy(
   all_event_matches.filter(m => m.actual_time == null),
   m => m.predicted_time
 )[0];
-// console.log(current_match);
 
 console.log();
 
