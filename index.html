@@ -137,7 +137,7 @@
           padding: 12px 24px;
         }
 
-        .allies, .enemies {
+        .allies, .opponents {
           display: flex;
           align-items: center;
           flex-wrap: wrap;
@@ -277,8 +277,7 @@
             const alliance = is_blue ? next_match.alliances.blue : next_match.alliances.red;
             result.next_alliance = alliance;
 
-            const enemy = is_blue ? next_match.alliances.red : next_match.alliances.blue;
-            result.next_enemy_alliance = enemy;
+            result.next_opponent_alliance = is_blue ? next_match.alliances.red : next_match.alliances.blue;
 
             const teammates = alliance.team_keys.filter(k => k != team_key).map(k => k.slice(3));
 
@@ -345,9 +344,9 @@
                     ${data.next_alliance.team_keys.map(teamNumberFromKey).filter(t => t != data.team_number).map(t => `<span class="team">${t}</span>`).join("")}
                   </div>
 
-                  <div class="enemies">
-                    <span class="label">ENEMIES:</span>
-                    ${data.next_enemy_alliance.team_keys.map(teamNumberFromKey).map(t => `<span class="team">${t}</span>`).join("")}
+                  <div class="opponents">
+                    <span class="label">OPPONENTS:</span>
+                    ${data.next_opponent_alliance.team_keys.map(teamNumberFromKey).map(t => `<span class="team">${t}</span>`).join("")}
                   </div>
 
                   <a class="watch-button" href="${streamUrl}" target="_blank">
@@ -378,7 +377,7 @@
           const seconds = remaining % 60;
 
           // Update text
-          el.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+          el.textContent = `≈${minutes}:${seconds.toString().padStart(2, "0")}`;
 
           // Update state classes
           el.classList.remove("warning", "danger");
