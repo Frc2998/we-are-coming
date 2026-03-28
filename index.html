@@ -297,8 +297,18 @@
             const data = await output();
             console.log(data);
 
-            const youtubeVideo = data.event.webcasts.filter(w => new Date(w.date) <= new Date() && w.type == 'youtube')[0].channel;
-            const streamUrl = `https://youtube.com/watch?v=${youtubeVideo}`;
+            const streamUrl = data.event.webcasts.filter(w => {
+              if (w.date != null) {
+                return new Date(w.date) <= new Date();
+              }
+              return true;
+            }).map(w => {
+              if (w.type == 'youtube') {
+                return `https://youtube.com/watch?v=${w.channel}`;
+              } else if (w.type == 'twitch') {
+                return `https://www.twitch.tv/${w.channel}`;
+              }
+            }).filter(url => url != null)[0];
 
             const matchesRemaining = data.next_match.match_number - data.current_match.match_number;
             const onDeck = matchesRemaining <= 0 ? 'ON FIELD'
@@ -349,9 +359,10 @@
                     ${data.next_opponent_alliance.team_keys.map(teamNumberFromKey).map(t => `<span class="team">${t}</span>`).join("")}
                   </div>
 
-                  <a class="watch-button" href="${streamUrl}" target="_blank">
-                    WATCH LIVE
-                  </a>
+                  ${streamUrl != null ?
+                    `<a class="watch-button" href="${streamUrl}" target="_blank">
+                      WATCH LIVE
+                    </a>` : '' }
                 </div>
               </div>`;
             updateCountdown();
