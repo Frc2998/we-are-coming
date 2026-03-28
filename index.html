@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fullscreen Grid</title>
+    <title>We Are Coming</title>
+
     <!-- Gridstack CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack/4.2.8/gridstack.min.css" />
     <style>
@@ -31,6 +32,8 @@
 
         const team_number = new URLSearchParams(window.location.search).get("team") ?? 346;
         const team_key = `frc${team_number}`;
+
+        document.title = `${team_number} | We Are Coming`;
 
         async function tba(route) {
           return (await fetch(`https://www.thebluealliance.com/api/v3${route}`, {
