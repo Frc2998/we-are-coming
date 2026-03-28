@@ -69,6 +69,8 @@
         async function output() {
             const lines = [];
 
+            lines.push(`Team: ${team_number}`);
+
             const events = await tba(`/team/${team_key}/events/${YEAR}`);
             const current_events = events.filter((e) => {
               const today = new Date();
