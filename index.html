@@ -392,9 +392,9 @@
           // Update state classes
           el.classList.remove("warning", "danger");
 
-          if (remaining <= 60 * 10) {
+          if (totalMinutes < 10) {
             el.classList.add("danger");
-          } else if (remaining <= 60 * 20) {
+          } else if (totalMinutes < 20) {
             el.classList.add("warning");
           }
         }
