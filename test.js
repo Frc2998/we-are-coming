@@ -6,11 +6,18 @@ const team_key = `frc${team_number}`;
 console.log(`HUD for team ${team_number}`)
 
 async function tba(route) {
-  return (await fetch(`https://www.thebluealliance.com/api/v3${route}`, {
+  const url = `https://www.thebluealliance.com/api/v3${route}`;
+  const result = (await fetch(url, {
     headers: {
       'X-TBA-Auth-Key': API_KEY,
     }
   })).json();
+
+  await Deno.writeTextFile(
+    `sample_data/${new Date().getTime()}.json`,
+    JSON.stringify(result),
+  );
+  return result;
 }
 
 function formatClock(seconds) {
